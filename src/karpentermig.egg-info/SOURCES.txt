@@ -5,6 +5,7 @@ setup.py
 src/karpentermig/__init__.py
 src/karpentermig/cli.py
 src/karpentermig/discover_cluster.py
+src/karpentermig/generate_karpenter.py
 src/karpentermig.egg-info/PKG-INFO
 src/karpentermig.egg-info/SOURCES.txt
 src/karpentermig.egg-info/dependency_links.txt

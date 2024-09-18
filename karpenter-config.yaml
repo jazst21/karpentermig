@@ -1,0 +1,41 @@
+apiVersion: karpenter.sh/v1alpha5
+kind: NodePool
+metadata:
+  name: default
+spec:
+  limits:
+    resources:
+      cpu: 1000
+      memory: 1000Gi
+  providerRef:
+    name: default
+  requirements:
+  - key: karpenter.sh/capacity-type
+    operator: In
+    values:
+    - on-demand
+  - key: node.kubernetes.io/instance-type
+    operator: In
+    values:
+    - ''
+    - m5.2xlarge
+  ttlSecondsAfterEmpty: 30
+---
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  amiFamily: AL2_x86_64
+  blockDeviceMappings:
+  - deviceName: /dev/xvda
+    ebs:
+      deleteOnTermination: true
+      volumeSize: 100Gi
+      volumeType: gp3
+  securityGroupSelector:
+    Name: eks-cluster-sg-ex-karpenter-fargate-1513714113*
+  subnetSelector:
+    Name: ex-karpenter-fargate-private-us-west-2c*
+  tags:
+    KarpenterManaged: 'true'

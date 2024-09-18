@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: karpentermig
-Version: 0.1.0
+Version: 0.2.0
 Summary: A tool for Karpenter migration
 Author: Pugar Jayanegara
 License: Copyright <2024> <PUGAR JAYANEGARA>
@@ -19,6 +19,7 @@ License-File: LICENSE
 Requires-Dist: questionary
 Requires-Dist: boto3
 Requires-Dist: click
+Requires-Dist: pyyaml
 
 # Simple Karpenter Migration Tool
 Migrate your EKS cluster from NodeGroup Cluster Autoscaler to Karpenter

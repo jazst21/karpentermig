@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='karpentermig',
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     description='A tool for Karpenter migration',
@@ -14,6 +14,7 @@ setup(
         'questionary',
         'boto3',
         'click',
+        'pyyaml',
     ],
     entry_points={
         'console_scripts': [

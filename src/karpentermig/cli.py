@@ -1,5 +1,6 @@
 import questionary
 from .discover_cluster import export_eks_config
+from .generate_karpenter import cli as generate_karpenter_cli
 
 questions = [
     {
@@ -14,6 +15,8 @@ answers = questionary.prompt(questions)
 
 if answers['karpenter_migration'] == 'Discover eks cluster nodegroup config':
     export_eks_config()
+elif answers['karpenter_migration'] == 'Generate karpenter config':
+    generate_karpenter_cli()
 else:
     print(f"Selected option: {answers['karpenter_migration']}")
 
