@@ -1,5 +1,5 @@
 import questionary
-from src.karpentermig.discover_cluster import export_eks_config  # Changed this line
+from .discover_cluster import export_eks_config
 
 questions = [
     {
@@ -16,3 +16,10 @@ if answers['karpenter_migration'] == 'Discover eks cluster nodegroup config':
     export_eks_config()
 else:
     print(f"Selected option: {answers['karpenter_migration']}")
+
+def cli():
+    # Function implementation
+    pass
+
+# Make sure the cli function is exported
+__all__ = ['cli']

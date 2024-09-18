@@ -1,0 +1,2 @@
+[console_scripts]
+karpentermig = karpentermig.cli:cli

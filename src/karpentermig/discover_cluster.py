@@ -2,22 +2,48 @@ import boto3
 import csv
 from botocore.exceptions import ClientError
 import click
+import questionary
+from boto3 import client
+
+def select_region():
+    regions = boto3.session.Session().get_available_regions('eks')
+    selected_region = questionary.select(
+        "Select AWS region:",
+        choices=regions
+    ).ask()
+    return selected_region
+
+def select_eks_cluster(region):
+    eks_client = client('eks', region_name=region)
+    clusters = eks_client.list_clusters()['clusters']
+    
+    if not clusters:
+        print(f"No EKS clusters found in the region {region}.")
+        return None
+
+    selected_cluster = questionary.select(
+        "Select an EKS cluster:",
+        choices=clusters
+    ).ask()
+    
+    return selected_cluster
+
 def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
     """Discover AWS EKS cluster node group and launch template configuration and export to CSV."""
     try:
+        # Select region if not provided
+        if not region:
+            region = select_region()
+        
         # Initialize AWS clients
         eks_client = boto3.client('eks', region_name=region)
         ec2_client = boto3.client('ec2', region_name=region)
 
-        # Get all EKS clusters in the region if cluster_name is not provided
+        # Select cluster if not provided
         if not cluster_name:
-            clusters = eks_client.list_clusters()['clusters']
-            if not clusters:
-                print("No EKS clusters found in the region.")
+            cluster_name = select_eks_cluster(region)
+            if not cluster_name:
                 return
-            cluster_name = input("Select an EKS cluster: ")
-            while cluster_name not in clusters:
-                cluster_name = input("Invalid cluster name. Please select a valid EKS cluster: ")
 
         # Get node groups for the cluster
         node_groups = eks_client.list_nodegroups(clusterName=cluster_name)['nodegroups']
@@ -73,12 +99,10 @@ def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
     except ClientError as e:
         print(f"An error occurred: {e}")
 @click.command()
-@click.option('--region', help='AWS region', type=click.Choice(boto3.session.Session().get_available_regions('eks')))
+@click.option('--region', help='AWS region')
 @click.option('--cluster-name', help='EKS cluster name')
 @click.option('--output', default='eks_config.csv', help='Output CSV file name')
 def cli(region, cluster_name, output):
-    if not region:
-        region = click.prompt("Select AWS region", type=click.Choice(boto3.session.Session().get_available_regions('eks')))
     export_eks_config(region, cluster_name, output)
 
 if __name__ == '__main__':
