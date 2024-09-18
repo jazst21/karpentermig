@@ -8,7 +8,7 @@ setup(
     description='A tool for Karpenter migration',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    author='Your Name',
+    author='Pugar Jayanegara',
     license='MIT',
     install_requires=[
         'questionary',
