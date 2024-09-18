@@ -1,0 +1,85 @@
+import boto3
+import csv
+from botocore.exceptions import ClientError
+import click
+def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
+    """Discover AWS EKS cluster node group and launch template configuration and export to CSV."""
+    try:
+        # Initialize AWS clients
+        eks_client = boto3.client('eks', region_name=region)
+        ec2_client = boto3.client('ec2', region_name=region)
+
+        # Get all EKS clusters in the region if cluster_name is not provided
+        if not cluster_name:
+            clusters = eks_client.list_clusters()['clusters']
+            if not clusters:
+                print("No EKS clusters found in the region.")
+                return
+            cluster_name = input("Select an EKS cluster: ")
+            while cluster_name not in clusters:
+                cluster_name = input("Invalid cluster name. Please select a valid EKS cluster: ")
+
+        # Get node groups for the cluster
+        node_groups = eks_client.list_nodegroups(clusterName=cluster_name)['nodegroups']
+
+        # Prepare data for CSV
+        data = []
+        for ng_name in node_groups:
+            ng_info = eks_client.describe_nodegroup(clusterName=cluster_name, nodegroupName=ng_name)['nodegroup']
+            
+            # Get launch template info if available
+            lt_info = {}
+            if 'launchTemplate' in ng_info:
+                lt_id = ng_info['launchTemplate']['id']
+                lt_info = ec2_client.describe_launch_templates(LaunchTemplateIds=[lt_id])['LaunchTemplates'][0]
+            # Get subnet names
+            subnet_ids = ng_info.get('subnets', [])
+            subnet_names = []
+            if subnet_ids:
+                subnets = ec2_client.describe_subnets(SubnetIds=subnet_ids)['Subnets']
+                subnet_names = [next((tag['Value'] for tag in subnet['Tags'] if tag['Key'] == 'Name'), subnet['SubnetId']) for subnet in subnets]
+
+            # Get security group names
+            sg_ids = ng_info.get('remoteAccess', {}).get('sourceSecurityGroups', [])
+            sg_names = []
+            if sg_ids:
+                sgs = ec2_client.describe_security_groups(GroupIds=sg_ids)['SecurityGroups']
+                sg_names = [sg['GroupName'] for sg in sgs]
+
+            data.append({
+                'ClusterName': cluster_name,
+                'NodeGroupName': ng_name,
+                'InstanceTypes': ', '.join(ng_info.get('instanceTypes', [])),
+                'DesiredSize': ng_info['scalingConfig']['desiredSize'],
+                'MinSize': ng_info['scalingConfig']['minSize'],
+                'MaxSize': ng_info['scalingConfig']['maxSize'],
+                'AMIType': ng_info.get('amiType', 'N/A'),
+                'DiskSize': ng_info.get('diskSize', 'N/A'),
+                'LaunchTemplateName': lt_info.get('LaunchTemplateName', 'N/A'),
+                'LaunchTemplateVersion': ng_info.get('launchTemplate', {}).get('version', 'N/A'),
+                'Subnets': ', '.join(subnet_names),
+                'SecurityGroups': ', '.join(sg_names),
+            })
+        # Write data to CSV file
+        with open(output, 'w', newline='') as csvfile:
+            fieldnames = ['ClusterName', 'NodeGroupName', 'InstanceTypes', 'DesiredSize', 'MinSize', 'MaxSize', 'AMIType', 'DiskSize', 'LaunchTemplateName', 'LaunchTemplateVersion', 'Subnets', 'SecurityGroups']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
+
+        print(f"EKS configuration exported to {output}")
+
+    except ClientError as e:
+        print(f"An error occurred: {e}")
+@click.command()
+@click.option('--region', help='AWS region', type=click.Choice(boto3.session.Session().get_available_regions('eks')))
+@click.option('--cluster-name', help='EKS cluster name')
+@click.option('--output', default='eks_config.csv', help='Output CSV file name')
+def cli(region, cluster_name, output):
+    if not region:
+        region = click.prompt("Select AWS region", type=click.Choice(boto3.session.Session().get_available_regions('eks')))
+    export_eks_config(region, cluster_name, output)
+
+if __name__ == '__main__':
+    cli()
