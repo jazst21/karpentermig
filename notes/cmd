@@ -8,3 +8,4 @@ kubectl get nodes -o wide
 kubectl describe node <node-name>
 ---
 pip install -e .
+twine upload dist/*

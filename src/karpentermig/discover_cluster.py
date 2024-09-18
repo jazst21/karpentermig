@@ -38,6 +38,7 @@ def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
         # Initialize AWS clients
         eks_client = boto3.client('eks', region_name=region)
         ec2_client = boto3.client('ec2', region_name=region)
+        asg_client = boto3.client('autoscaling', region_name=region)
 
         # Select cluster if not provided
         if not cluster_name:
@@ -55,9 +56,19 @@ def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
             
             # Get launch template info if available
             lt_info = {}
+            ami_id = 'N/A'
             if 'launchTemplate' in ng_info:
                 lt_id = ng_info['launchTemplate']['id']
                 lt_info = ec2_client.describe_launch_templates(LaunchTemplateIds=[lt_id])['LaunchTemplates'][0]
+                
+                # Extract AMI ID from launch template
+                lt_version = ng_info['launchTemplate'].get('version', '$Default')
+                lt_data = ec2_client.describe_launch_template_versions(
+                    LaunchTemplateId=lt_id,
+                    Versions=[lt_version]
+                )['LaunchTemplateVersions'][0]['LaunchTemplateData']
+                ami_id = lt_data.get('ImageId', 'N/A')
+
             # Get subnet names
             subnet_ids = ng_info.get('subnets', [])
             subnet_names = []
@@ -65,12 +76,36 @@ def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
                 subnets = ec2_client.describe_subnets(SubnetIds=subnet_ids)['Subnets']
                 subnet_names = [next((tag['Value'] for tag in subnet['Tags'] if tag['Key'] == 'Name'), subnet['SubnetId']) for subnet in subnets]
 
+            # Get security group IDs
+            sg_ids = set()
+            if 'launchTemplate' in ng_info:
+                lt_id = ng_info['launchTemplate']['id']
+                lt_version = ng_info['launchTemplate'].get('version', '$Default')
+                lt_data = ec2_client.describe_launch_template_versions(
+                    LaunchTemplateId=lt_id,
+                    Versions=[lt_version]
+                )['LaunchTemplateVersions'][0]['LaunchTemplateData']
+                sg_ids.update(lt_data.get('NetworkInterfaces', [{}])[0].get('Groups', []))
+            else:
+                # If no launch template, get security groups from EC2 instances
+                asg_name = ng_info['resources']['autoScalingGroups'][0]['name']
+                asg_info = asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])['AutoScalingGroups'][0]
+                instance_ids = [i['InstanceId'] for i in asg_info['Instances']]
+                if instance_ids:
+                    instances = ec2_client.describe_instances(InstanceIds=instance_ids)['Reservations'][0]['Instances']
+                    for instance in instances:
+                        for nic in instance['NetworkInterfaces']:
+                            sg_ids.update([sg['GroupId'] for sg in nic['Groups']])
+
             # Get security group names
-            sg_ids = ng_info.get('remoteAccess', {}).get('sourceSecurityGroups', [])
             sg_names = []
             if sg_ids:
-                sgs = ec2_client.describe_security_groups(GroupIds=sg_ids)['SecurityGroups']
-                sg_names = [sg['GroupName'] for sg in sgs]
+                try:
+                    sgs = ec2_client.describe_security_groups(GroupIds=list(sg_ids))['SecurityGroups']
+                    sg_names = [sg['GroupName'] for sg in sgs]
+                except ClientError as e:
+                    print(f"Error fetching security group names: {e}")
+                    sg_names = list(sg_ids)  # Use IDs if names can't be fetched
 
             data.append({
                 'ClusterName': cluster_name,
@@ -83,12 +118,13 @@ def export_eks_config(region=None, cluster_name=None, output='eks_config.csv'):
                 'DiskSize': ng_info.get('diskSize', 'N/A'),
                 'LaunchTemplateName': lt_info.get('LaunchTemplateName', 'N/A'),
                 'LaunchTemplateVersion': ng_info.get('launchTemplate', {}).get('version', 'N/A'),
+                'AMIID': ami_id,  # Add AMI ID to the data
                 'Subnets': ', '.join(subnet_names),
                 'SecurityGroups': ', '.join(sg_names),
             })
         # Write data to CSV file
         with open(output, 'w', newline='') as csvfile:
-            fieldnames = ['ClusterName', 'NodeGroupName', 'InstanceTypes', 'DesiredSize', 'MinSize', 'MaxSize', 'AMIType', 'DiskSize', 'LaunchTemplateName', 'LaunchTemplateVersion', 'Subnets', 'SecurityGroups']
+            fieldnames = ['ClusterName', 'NodeGroupName', 'InstanceTypes', 'DesiredSize', 'MinSize', 'MaxSize', 'AMIType', 'DiskSize', 'LaunchTemplateName', 'LaunchTemplateVersion', 'AMIID', 'Subnets', 'SecurityGroups']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for row in data:
