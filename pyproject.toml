@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "karpentermig"
-version = "0.1"
+version = "0.1.0"
 description = "A tool for Karpenter migration"
 readme = "README.md"
 authors = [{name = "Pugar Jayanegara"}]
