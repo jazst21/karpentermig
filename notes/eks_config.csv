@@ -1,0 +1,1 @@
+ClusterName,NodeGroupName,InstanceTypes,DesiredSize,MinSize,MaxSize,AMIType,DiskSize,LaunchTemplateName,LaunchTemplateVersion

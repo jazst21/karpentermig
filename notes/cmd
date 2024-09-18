@@ -1,0 +1,8 @@
+aws eks list-nodegroups --cluster-name <your-cluster-name>
+aws eks describe-nodegroup --cluster-name <your-cluster-name> --nodegroup-name <your-nodegroup-name>
+---
+aws ec2 describe-launch-templates --launch-template-ids <your-launch-template-id>
+aws ec2 describe-launch-templates --launch-template-names <your-launch-template-name>
+--
+kubectl get nodes -o wide
+kubectl describe node <node-name>
