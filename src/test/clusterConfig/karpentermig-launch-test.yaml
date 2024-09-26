@@ -1,0 +1,22 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: karpentermig-launch-test
+  region: us-west-2  # You can change this to your preferred region
+
+managedNodeGroups:
+  - name: ng-t3-small-lt
+    instanceType: t3.small
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 1
+    privateNetworking: true
+    launchTemplate:
+      id: !Ref NodeGroupLaunchTemplate
+    subnets:
+      - subnet-12345678  # Replace with your actual subnet IDs
+      - subnet-23456789
+      - subnet-34567890
+
+# The launch template will be created separately using CloudFormation

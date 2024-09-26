@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for EKS Node Group Launch Template'
+
+Parameters:
+  ClusterName:
+    Type: String
+    Description: Name of the EKS cluster
+
+  NodeGroupName:
+    Type: String
+    Description: Name of the EKS Node Group
+
+  AMIId:
+    Type: AWS::EC2::Image::Id
+    Description: Custom AMI ID for the EKS nodes
+
+Resources:
+  NodeGroupLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub ${ClusterName}-${NodeGroupName}-lt
+      LaunchTemplateData:
+        ImageId: !Ref AMIId
+        InstanceType: t3.small
+        UserData:
+          Fn::Base64:
+            !Sub |
+              #!/bin/bash
+              echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+              echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+              /etc/eks/bootstrap.sh ${ClusterName} --kubelet-extra-args '--max-pods=110'
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub ${ClusterName}-${NodeGroupName}-node
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 20
+              VolumeType: gp3
+        MetadataOptions:
+          HttpPutResponseHopLimit: 2
+          HttpTokens: required
+
+Outputs:
+  LaunchTemplateId:
+    Description: ID of the created Launch Template
+    Value: !Ref NodeGroupLaunchTemplate

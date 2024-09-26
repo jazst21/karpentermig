@@ -1,0 +1,34 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: karpentermig-cas-test
+  region: us-west-2  # You can change this to your preferred region
+
+managedNodeGroups:
+  - name: ng-t4-small
+    instanceType: t3a.small  # Note: t4.small doesn't exist, using t3a.small as an alternative
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 1
+    privateNetworking: true
+    labels:
+      lifecycle: ec2-autoscaler
+
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+  - metadata:
+      name: cluster-autoscaler
+      namespace: kube-system
+    wellKnownPolicies:
+      autoScaler: true
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["*"]

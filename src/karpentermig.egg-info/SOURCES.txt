@@ -13,4 +13,5 @@ src/karpentermig.egg-info/entry_points.txt
 src/karpentermig.egg-info/requires.txt
 src/karpentermig.egg-info/top_level.txt
 src/test/__init__.py
+src/test/test_create_cluster.py
 src/test/test_karpentermig.py

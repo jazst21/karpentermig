@@ -9,3 +9,7 @@ kubectl describe node <node-name>
 ---
 pip install -e .
 twine upload dist/*
+---
+eks-node-viewer node-selector=karpenter.sh/nodepool
+https://github.com/awslabs/eks-node-viewer
+---
