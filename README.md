@@ -14,7 +14,7 @@ The scenario automation CLI support would be:
 2. 3 scenario autoscaling: 
     1. Managed NodeGroups (ASGs)
     2. Managed NodeGroups (ASGs) + Launch Templates
-    3. Zone-aware ASGs (Multi-AZ)
+    3. ~~Zone-aware ASGs (Multi-AZ)~~
 
 # Download
 karpentermig is available on PyPI https://pypi.org/project/karpentermig/

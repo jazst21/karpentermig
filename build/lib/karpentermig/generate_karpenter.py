@@ -8,14 +8,16 @@ import json
 # Update the schema_dir path
 schema_dir = os.path.join(os.path.dirname(__file__), 'schema')
 
-def load_and_update_node_pool_schema():
+def load_and_update_node_pool_schema(eks_config):
     with open(os.path.join(schema_dir, 'nodePool-1-0-0.yaml'), 'r') as f:
-        node_pool_schema = yaml.safe_load(f)
-    node_pool_schema['metadata']['name'] = "updated"
+        node_pool_schema = yaml.safe_load(f)    
+    if not isinstance(eks_config, list) or len(eks_config) == 0:
+        raise ValueError("eks_config must be a non-empty list of dictionaries")    
+    node_pool_schema['metadata']['name'] = eks_config[0]['NodeGroupName']
     node_pool_schema['spec']['disruption']['consolidationPolicy'] = "WhenEmptyOrUnderutilized"
     return node_pool_schema
 
-def load_and_update_ec2_node_class_schema():
+def load_and_update_ec2_node_class_schema(eks_config):
     with open(os.path.join(schema_dir, 'ec2NodeClass-1-0-0.yaml'), 'r') as f:
         ec2_node_class_schema=yaml.safe_load(f)
     ec2_node_class_schema['metadata']['name'] = "updated"
@@ -30,19 +32,16 @@ def read_eks_config(csv_file):
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
         config = list(reader)
-        
-    # If there's only one row, return it as a dictionary
-    if len(config) == 1:
-        return config[0]
-    # Otherwise, return the list of dictionaries
+    
+    # Always return a list of dictionaries
     return config
 
 def generate_karpenter_config(eks_config):
     # Here you can customize the node_pool and ec2_node_class schemas
     # based on the eks_config values if needed
     return {
-        "node_pool": load_and_update_node_pool_schema(),
-        "ec2_node_class": load_and_update_ec2_node_class_schema()
+        "node_pool": load_and_update_node_pool_schema(eks_config),
+        "ec2_node_class": load_and_update_ec2_node_class_schema(eks_config)
     }
 
 def write_karpenter_config(config, output_file):

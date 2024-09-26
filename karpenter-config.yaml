@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: updated
+  name: nodeGroup2Launch
 spec:
   disruption:
     budgets:

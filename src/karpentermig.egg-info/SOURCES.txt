@@ -16,6 +16,7 @@ src/karpentermig.egg-info/requires.txt
 src/karpentermig.egg-info/top_level.txt
 src/karpentermig/schema/ec2NodeClass-1-0-0.yaml
 src/karpentermig/schema/nodePool-1-0-0.yaml
+src/karpentermig/schema/schemaRef/ec2NodeClass-1-0-0-ref.yaml
 src/karpentermig/schema/schemaRef/nodePool-1-0-0-ref.yaml
 src/test/__init__.py
 src/test/test_create_cluster.py
