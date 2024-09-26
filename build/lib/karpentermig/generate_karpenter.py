@@ -8,12 +8,19 @@ import json
 # Update the schema_dir path
 schema_dir = os.path.join(os.path.dirname(__file__), 'schema')
 
-with open(os.path.join(schema_dir, 'nodePool-1-0-0.yaml'), 'r') as f:
-    node_pool_schema = yaml.safe_load(f)
+def load_and_update_node_pool_schema():
+    with open(os.path.join(schema_dir, 'nodePool-1-0-0.yaml'), 'r') as f:
+        node_pool_schema = yaml.safe_load(f)
+    node_pool_schema['metadata']['name'] = "updated"
+    node_pool_schema['spec']['disruption']['consolidationPolicy'] = "WhenEmptyOrUnderutilized"
+    return node_pool_schema
 
-with open(os.path.join(schema_dir, 'ec2NodeClass-1-0-0.yaml'), 'r') as f:
-    ec2_node_class_schema = yaml.safe_load(f)
-
+def load_and_update_ec2_node_class_schema():
+    with open(os.path.join(schema_dir, 'ec2NodeClass-1-0-0.yaml'), 'r') as f:
+        ec2_node_class_schema=yaml.safe_load(f)
+    ec2_node_class_schema['metadata']['name'] = "updated"
+    return ec2_node_class_schema
+    
 def read_eks_config(csv_file):
     # Get the directory of the current script
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,8 +41,8 @@ def generate_karpenter_config(eks_config):
     # Here you can customize the node_pool and ec2_node_class schemas
     # based on the eks_config values if needed
     return {
-        "node_pool": node_pool_schema,
-        "ec2_node_class": ec2_node_class_schema
+        "node_pool": load_and_update_node_pool_schema(),
+        "ec2_node_class": load_and_update_ec2_node_class_schema()
     }
 
 def write_karpenter_config(config, output_file):

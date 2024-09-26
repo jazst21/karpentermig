@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: default
+  name: updated
 spec:
   disruption:
     budgets:
@@ -10,7 +10,7 @@ spec:
       nodes: '0'
       schedule: 0 9 * * mon-fri
     consolidateAfter: 1m | Never
-    consolidationPolicy: WhenEmptyOrUnderutilized | WhenEmpty
+    consolidationPolicy: WhenEmptyOrUnderutilized
   limits:
     cpu: '1000'
     memory: 1000Gi
@@ -98,7 +98,7 @@ status:
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
-  name: default
+  name: updated
 spec:
   amiFamily: AL2
   amiSelectorTerms:
