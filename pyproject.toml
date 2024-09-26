@@ -20,6 +20,7 @@ dependencies = [
     "click",
     "pyyaml",
 ]
+requires-python = ">=3.6"
 
 [project.scripts]
 karpentermig = "karpentermig.cli:cli"

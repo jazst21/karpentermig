@@ -2,95 +2,70 @@ import csv
 import yaml
 import click
 from pathlib import Path
+import os
+import json
+
+# Update the schema_dir path
+schema_dir = os.path.join(os.path.dirname(__file__), 'schema')
+
+with open(os.path.join(schema_dir, 'nodePool-1-0-0.yaml'), 'r') as f:
+    node_pool_schema = yaml.safe_load(f)
+
+with open(os.path.join(schema_dir, 'ec2NodeClass-1-0-0.yaml'), 'r') as f:
+    ec2_node_class_schema = yaml.safe_load(f)
 
 def read_eks_config(csv_file):
-    with open(csv_file, 'r') as f:
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the full path to the CSV file
+    csv_path = os.path.join(current_dir, csv_file)
+    
+    with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
-        return list(reader)
+        config = list(reader)
+        
+    # If there's only one row, return it as a dictionary
+    if len(config) == 1:
+        return config[0]
+    # Otherwise, return the list of dictionaries
+    return config
 
 def generate_karpenter_config(eks_config):
-    NodePool = {
-        'apiVersion': 'karpenter.sh/v1alpha5',
-        'kind': 'NodePool',
-        'metadata': {'name': 'default'},
-        'spec': {
-            'requirements': [
-                {'key': 'karpenter.sh/capacity-type', 'operator': 'In', 'values': ['on-demand']},
-                {'key': 'node.kubernetes.io/instance-type', 'operator': 'In', 'values': []}
-            ],
-            'limits': {'resources': {'cpu': 1000, 'memory': '1000Gi'}},
-            'providerRef': {'name': 'default'},
-            'ttlSecondsAfterEmpty': 30
-        }
+    # Here you can customize the node_pool and ec2_node_class schemas
+    # based on the eks_config values if needed
+    return {
+        "node_pool": node_pool_schema,
+        "ec2_node_class": ec2_node_class_schema
     }
 
-    EC2NodeClass = {
-        'apiVersion': 'karpenter.k8s.aws/v1alpha1',
-        'kind': 'EC2NodeClass',
-        'metadata': {'name': 'default'},
-        'spec': {
-            'amiFamily': 'AL2',  # Default to Amazon Linux 2
-            'subnetSelector': {},
-            'securityGroupSelector': {},
-            'tags': {'KarpenterManaged': 'true'},
-            'blockDeviceMappings': [
-                {
-                    'deviceName': '/dev/xvda',
-                    'ebs': {
-                        'volumeSize': '100Gi',
-                        'volumeType': 'gp3',
-                        'encrypted': True,
-                        'deleteOnTermination': True
-                    }
-                }
-            ],
-            'userData': '...',  # Add user data if needed
-            'metadataOptions': {
-                'httpEndpoint': 'enabled',
-                'httpProtocolIPv6': 'disabled',
-                'httpPutResponseHopLimit': 2,
-                'httpTokens': 'required'
-            }
-        }
-    }
+def write_karpenter_config(config, output_file):
+    with open(output_file, 'w') as f:
+        yaml.dump_all([config['node_pool'], config['ec2_node_class']], f, default_flow_style=False)
 
-    for config in eks_config:
-        # Add instance types
-        instance_types = [t.strip() for t in config['InstanceTypes'].split(',')]
-        NodePool['spec']['requirements'][1]['values'].extend(instance_types)
-
-        # Set AMI family or custom AMI
-        if config['AMIType'] != 'N/A':
-            EC2NodeClass['spec']['amiFamily'] = config['AMIType']
-        elif config['AMIID'] != 'N/A':
-            EC2NodeClass['spec']['amiSelector'] = {'aws::ids': [config['AMIID']]}
-
-        # Set subnet selector
-        subnet_names = [s.strip() for s in config['Subnets'].split(',')]
-        if subnet_names:
-            EC2NodeClass['spec']['subnetSelector'] = {'Name': f"{subnet_names[0]}*"}
-
-        # Set security group selector
-        sg_names = [sg.strip() for sg in config['SecurityGroups'].split(',')]
-        if sg_names:
-            EC2NodeClass['spec']['securityGroupSelector'] = {'Name': f"{sg_names[0]}*"}
-
-    # Remove duplicates from instance types
-    NodePool['spec']['requirements'][1]['values'] = list(set(NodePool['spec']['requirements'][1]['values']))
-
-    return [NodePool, EC2NodeClass]
+def log_eks_config(eks_config):
+    """
+    Recursively iterate through all columns in eks_config and log them in JSON format.
+    """
+    click.echo("EKS Config:")
+    if isinstance(eks_config, dict):
+        click.echo(json.dumps(eks_config, indent=2))
+    elif isinstance(eks_config, list):
+        for idx, config in enumerate(eks_config):
+            click.echo(f"Config {idx + 1}:")
+            click.echo(json.dumps(config, indent=2))
+    else:
+        click.echo("Unexpected eks_config format")
 
 @click.command()
-@click.option('--input', 'input_file', default='eks_config.csv', help='Input CSV file from discover_cluster.py')
+@click.option('--input', 'input_file', default=os.path.join(os.getcwd(), 'eks_config.csv'), help='Input CSV file from discover_cluster.py')
 @click.option('--output', 'output_file', default='karpenter-config.yaml', help='Output YAML file for Karpenter configuration')
 def cli(input_file, output_file):
     eks_config = read_eks_config(input_file)
     karpenter_config = generate_karpenter_config(eks_config)
-
-    with open(output_file, 'w') as f:
-        yaml.dump_all(karpenter_config, f, default_flow_style=False)
-
-    print(f"Karpenter configuration has been generated and saved to {output_file}")
+    write_karpenter_config(karpenter_config, output_file)
+    click.echo(f"Karpenter configuration generated: {output_file}")
+    log_eks_config(eks_config)
+    
 
 if __name__ == '__main__':
     cli()

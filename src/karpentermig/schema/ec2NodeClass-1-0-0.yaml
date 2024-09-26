@@ -1,15 +1,3 @@
-apiVersion: karpenter.sh/v1
-kind: NodePool
-metadata:
-  name: default
-spec:
-  template:
-    spec:
-      nodeClassRef:
-        group: karpenter.k8s.aws
-        kind: EC2NodeClass
-        name: default
----
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:

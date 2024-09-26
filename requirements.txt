@@ -1,3 +1,7 @@
 boto3
 moto
 questionary
+jsonschema
+rpds-py
+click
+PyYAML
