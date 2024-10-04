@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Build and distribution
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Mypy
+.mypy_cache/
+
+# Poetry
+poetry.lock
+
+# Kubernetes
+kubeconfig
+
+# CSV files (if you want to ignore all CSV files)
+*.csv
+
+# YAML files (if you want to ignore all YAML files except karpenter-config.yaml)
+*.yaml
+!karpenter-config.yaml
+
+# Add this line if you want to track eks_config.csv
+!eks_config.csv

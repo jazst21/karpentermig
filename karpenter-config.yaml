@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: nodeGroup2Launch
+  name: nodeGroup2LaunchExt
 spec:
   disruption:
     budgets:
@@ -16,8 +16,7 @@ spec:
     memory: 1000Gi
   template:
     metadata:
-      annotations:
-        example.com/owner: my-team
+      annotations: null
       labels:
         billing-team: my-team
     spec:
@@ -74,9 +73,7 @@ spec:
         values:
         - spot
         - on-demand
-      startupTaints:
-      - effect: NoSchedule
-        key: example.com/another-taint
+      startupTaints: null
       taints:
       - effect: NoSchedule
         key: example.com/special-taint

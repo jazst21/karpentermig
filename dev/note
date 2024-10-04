@@ -1,0 +1,22 @@
+53b54ced-57fe-49d6-9f97-11a75121cbaa:BgoAvBI35GQFAAAA:n2GnuFVXy/U6k2UnNbfm8FwQi4DltG6eaEB/Q9rPrgGR2dn7XJXa9cexa/kuRINGdmKddQaxqSC4tz03jFlPv+OSR2x89tnRm3xvEB4bV8boENJx92+virqd8ncvf6sUPfLCxnuwbN+1qpJNQNfStyZMmoRzA8vcpLiIqRwkagHB3SIaIl8r26PfmFY96sGmatk=
+
+curl 'https://www.traveloka.com/api/v2/flight/search/oneway' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -H 'cookie: selectedCurrency=EUR; currentCountry=IT; tv-repeat-visit=true; countryCode=IT; aws-waf-token=53b54ced-57fe-49d6-9f97-11a75121cbaa:BgoAvBI35GQFAAAA:n2GnuFVXy/U6k2UnNbfm8FwQi4DltG6eaEB/Q9rPrgGR2dn7XJXa9cexa/kuRINGdmKddQaxqSC4tz03jFlPv+OSR2x89tnRm3xvEB4bV8boENJx92+virqd8ncvf6sUPfLCxnuwbN+1qpJNQNfStyZMmoRzA8vcpLiIqRwkagHB3SIaIl8r26PfmFY96sGmatk=
+' \
+  -H 'origin: https://www.traveloka.com' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.traveloka.com/en-en/flight/fullsearch?ap=DEL.BKK&dt=16-6-2024.NA&ps=1.0.0&sc=ECONOMY' \
+  -H 'sec-ch-ua: "Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36' \
+  -H 'x-domain: flight' \
+  -H 'x-route-prefix: en-en' \
+  --data-raw '{"fields":[],"clientInterface":"desktop","data":{"currency":"EUR","isReschedule":false,"locale":"en_EN","numSeats":{"numAdults":1,"numChildren":0,"numInfants":0},"seatPublishedClass":"ECONOMY","destinationAirportOrArea":"BKK","flexibleTicket":false,"flightDate":{"year":2024,"month":6,"day":16},"sourceAirportOrArea":"DEL","newResult":true,"seqNo":null,"searchId":"e55da74a-7ee0-4ede-8f34-1824f0d47d4c","visitId":"300d87cc-99fb-4d4f-9da1-ab767ca06ab5","utmId":null,"utmSource":null,"searchSpecRoutesTotal":1,"trackingContext":{"entrySource":""},"searchSpecRouteIndex":0,"journeyIndex":0}}'
