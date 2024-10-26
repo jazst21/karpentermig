@@ -1,7 +1,7 @@
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
-  name: nodeGroup2LaunchExt
+  name: nodeGroup2Launch
 spec:
   disruption:
     budgets:
@@ -10,10 +10,10 @@ spec:
       nodes: '0'
       schedule: 0 9 * * mon-fri
     consolidateAfter: 1m | Never
-    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidationPolicy: WhenEmptyOrUnderutilized | WhenEmpty
   limits:
-    cpu: '1000'
-    memory: 1000Gi
+    cpu: '4'
+    memory: '4'
   template:
     metadata:
       annotations: null
@@ -73,6 +73,8 @@ spec:
         values:
         - spot
         - on-demand
+      requirements[0]:
+        values[0]: ''
       startupTaints: null
       taints:
       - effect: NoSchedule
@@ -95,9 +97,9 @@ status:
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
-  name: updated
+  name: nodeGroup2Launch
 spec:
-  amiFamily: AL2
+  amiFamily: CUSTOM
   amiSelectorTerms:
   - tags:
       environment: test
@@ -160,11 +162,19 @@ spec:
       karpenter.sh/discovery: ${CLUSTER_NAME}
   - name: my-security-group
   - id: sg-063d7acfb4b06c82c
+  securityGroupSelectorTerms[0]:
+    tags:
+      Name: eks-cluster-sg-ex-karpenter-fargate-1513714113
   subnetSelectorTerms:
   - tags:
       environment: test
       karpenter.sh/discovery: ${CLUSTER_NAME}
   - id: subnet-09fa4a0a8f233a921
+  subnetSelectorTerms[0]:
+    tags:
+      Name: ex-karpenter-fargate-public-us-west-2a, ex-karpenter-fargate-private-us-west-2c,
+        ex-karpenter-fargate-public-us-west-2b, ex-karpenter-fargate-public-us-west-2c,
+        ex-karpenter-fargate-private-us-west-2a, ex-karpenter-fargate-private-us-west-2b
   tags:
     app: team-a-app
     team: team-a

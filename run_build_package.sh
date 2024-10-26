@@ -5,6 +5,14 @@ set -e
 # Navigate to the project root directory
 cd "$(dirname "$0")"
 
+# Scan for secrets
+echo "Scanning for secrets..."
+if ! git secrets --scan > secret_scan_results.txt 2>&1; then
+    echo "Error: Potential secrets found in the codebase. Check secret_scan_results.txt for details."
+    exit 1
+fi
+echo "Secret scan completed. Results saved to secret_scan_results.txt"
+
 # Ensure we have the latest setuptools, wheel, and twine
 pip install --upgrade setuptools wheel twine
 

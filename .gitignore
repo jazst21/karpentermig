@@ -2,11 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
 
 # Virtual environments
 venv/
 env/
-.env
+env/
 
 # IDEs and editors
 .vscode/
@@ -26,6 +28,9 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+# Add the following lines to ignore specific dist files
+*.whl
+*.tar.gz
 
 # Jupyter Notebooks
 .ipynb_checkpoints
@@ -56,3 +61,26 @@ kubeconfig
 
 # Add this line if you want to track eks_config.csv
 !eks_config.csv
+
+# Ignore run_publish.sh script
+run_publish.sh
+
+# Python-related ignores (if not already present)
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Add this line to ignore the secret scan results file
+secret_scan_results.txt
